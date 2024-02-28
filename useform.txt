@@ -1,0 +1,110 @@
+Sub PreencherComboBox()
+    Dim ws As Worksheet
+    Dim rng As Range
+    Dim cel As Range
+    
+    ' Definir a planilha onde estão os valores
+    Set ws = ThisWorkbook.Sheets("Planilha1") ' Altere "Planilha" para o nome da sua planilha
+    
+    ' Definir o intervalo de células B1:M1
+    Set rng = ws.Range("B1:M1")
+    
+    ' Limpar os itens existentes na ComboBox
+    ComboBox1.Clear
+    
+    ' Adicionar os valores das células ao ComboBox
+    For Each cel In rng
+        ComboBox1.AddItem cel.Value
+    Next cel
+End Sub
+Sub PreencherComboBoxDia()
+    Dim i As Integer
+    
+    ' Limpar itens existentes na ComboBox2
+    ComboBox2.Clear
+    
+    ' Adicionar os dias do mês à ComboBox2
+    For i = 1 To 31
+        ComboBox2.AddItem i
+    Next i
+End Sub
+Sub PreencherComboBoxMes()
+    Dim meses As Variant
+    Dim i As Integer
+    
+    ' Definir os nomes dos meses
+    meses = Array("Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro")
+    
+    ' Limpar itens existentes na ComboBox3
+    ComboBox3.Clear
+    
+    ' Adicionar os meses à ComboBox3
+    For i = LBound(meses) To UBound(meses)
+        ComboBox3.AddItem meses(i)
+    Next i
+End Sub
+Sub SalvarDados()
+    Dim ws As Worksheet
+    Dim linha As Integer
+    Dim coluna As Integer
+    Dim resposta As VbMsgBoxResult
+    
+    ' Definir a planilha onde serão salvos os dados
+    Set ws = ThisWorkbook.Sheets("Planilha1") ' Altere "Planilha1" para o nome da sua planilha
+    
+    ' Determinar a linha com base no valor selecionado na ComboBox2 (dia)
+    linha = ComboBox2.Value + 1 ' Adiciona 1 para compensar o cabeçalho
+    
+    ' Determinar a coluna com base no valor selecionado na ComboBox3 (mês)
+    Select Case ComboBox3.Value
+        Case "Janeiro"
+            coluna = 2 ' Coluna B para Janeiro
+        Case "Fevereiro"
+            coluna = 3 ' Coluna C para Fevereiro
+        Case "Março"
+            coluna = 4 ' Coluna D para Março
+        Case "Abril"
+            coluna = 5 ' Coluna E para Abril
+        Case "Maio"
+            coluna = 6 ' Coluna F para Maio
+        Case "Junho"
+            coluna = 7 ' Coluna G para Junho
+        Case "Julho"
+            coluna = 8 ' Coluna H para Julho
+        Case "Agosto"
+            coluna = 9 ' Coluna I para Agosto
+        Case "Setembro"
+            coluna = 10 ' Coluna J para Setembro
+        Case "Outubro"
+            coluna = 11 ' Coluna K para Outubro
+        Case "Novembro"
+            coluna = 12 ' Coluna L para Novembro
+        Case "Dezembro"
+            coluna = 13 ' Coluna M para Dezembro
+    End Select
+    
+    ' Verificar se a célula já possui um valor
+    If Not IsEmpty(ws.Cells(linha, coluna).Value) Then
+        ' Perguntar ao usuário se deseja alterar o valor existente
+        resposta = MsgBox("A célula já possui um valor. Deseja substituí-lo?", vbQuestion + vbYesNo)
+        
+        ' Verificar a resposta do usuário
+        If resposta = vbNo Then
+            Exit Sub ' Sair da sub-rotina sem fazer alterações
+        End If
+    End If
+    
+    ' Salvar o valor selecionado na ComboBox4 na célula correspondente
+    ws.Cells(linha, coluna).Value = ComboBox4.Value
+End Sub
+
+Private Sub CommandButton1_Click()
+Call SalvarDados
+End Sub
+
+Private Sub UserForm_Activate()
+Call PreencherComboBox
+Call PreencherComboBoxDia
+Call PreencherComboBoxMes
+ComboBox4.AddItem "teste"
+End Sub
