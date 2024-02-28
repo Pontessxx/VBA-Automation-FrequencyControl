@@ -1,0 +1,3 @@
+Private Sub BotaoAbrirNovoUserForm_Click()
+    NovoUserForm.Show
+End Sub
