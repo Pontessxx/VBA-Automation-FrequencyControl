@@ -1,0 +1,6 @@
+Private Sub UserForm_Initialize()
+    Dim i As Integer
+    For i = 2024 To 2040
+        Me.ComboBoxAno.AddItem i
+    Next i
+End Sub
