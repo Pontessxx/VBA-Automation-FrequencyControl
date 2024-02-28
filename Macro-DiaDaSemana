@@ -1,0 +1,40 @@
+Sub AdicionarDiaSemana()
+    Dim ws As Worksheet
+    Dim i As Integer
+    Dim ultimoDia As Integer
+    Dim diaDaSemana As Integer
+    Dim nomeDia As String
+    
+    ' Definir a planilha onde serão adicionados os valores
+    Set ws = ThisWorkbook.Sheets("Planilha1") ' Altere "Planilha1" para o nome da sua planilha
+    
+    ' Determinar o último dia do mês na coluna A
+    ultimoDia = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+    
+    ' Loop através dos dias do mês
+    For i = 2 To ultimoDia ' Assumindo que a linha 1 é o cabeçalho
+        ' Determinar o dia da semana para o dia atual
+        diaDaSemana = Weekday(ws.Cells(i, 1).Value)
+        
+        ' Determinar o nome do dia da semana
+        Select Case diaDaSemana
+            Case 1
+                nomeDia = "dom"
+            Case 2
+                nomeDia = "seg"
+            Case 3
+                nomeDia = "terça"
+            Case 4
+                nomeDia = "qua"
+            Case 5
+                nomeDia = "qui"
+            Case 6
+                nomeDia = "sex"
+            Case 7
+                nomeDia = "sab"
+        End Select
+        
+        ' Salvar o nome do dia da semana na coluna D
+        ws.Cells(i, 4).Value = nomeDia
+    Next i
+End Sub
