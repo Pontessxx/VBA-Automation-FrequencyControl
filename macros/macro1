@@ -1,0 +1,80 @@
+Sub AdicionarDiaSemana(ws As Worksheet)
+    Dim i As Integer
+    Dim ultimoDia As Integer
+    Dim primeiroDia As Date
+    Dim diaDaSemana As Integer
+    Dim nomeDia As String
+    
+    ' Determinar o último dia do mês na coluna A
+    ultimoDia = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+    
+    ' Determinar a data do primeiro dia do mês
+    primeiroDia = DateSerial(Year(ws.Cells(2, 1).Value), Month(ws.Cells(2, 1).Value), 1)
+    
+    ' Loop através dos dias do mês
+    For i = 2 To ultimoDia ' Assumindo que a linha 1 é o cabeçalho
+        ' Determinar a data atual
+        dataAtual = DateSerial(Year(primeiroDia), Month(primeiroDia), i - 1)
+        
+        ' Determinar o dia da semana para o dia atual
+        diaDaSemana = Weekday(dataAtual)
+        
+        ' Determinar o nome do dia da semana
+        Select Case diaDaSemana
+            Case 1
+                nomeDia = "dom"
+            Case 2
+                nomeDia = "seg"
+            Case 3
+                nomeDia = "terça"
+            Case 4
+                nomeDia = "qua"
+            Case 5
+                nomeDia = "qui"
+            Case 6
+                nomeDia = "sex"
+            Case 7
+                nomeDia = "sab"
+        End Select
+        
+        ' Salvar o nome do dia da semana na coluna D
+        ws.Cells(1, 13).Value = "DIA DA SEMANA"
+        ws.Cells(i, 13).Value = nomeDia
+    Next i
+End Sub
+Sub PintarLinhasSabadoDomingo(ws As Worksheet)
+    Dim ultimaLinha As Long
+    Dim rng As Range
+    Dim cel As Range
+    
+    ' Determinar a última linha na coluna A da planilha passada como argumento
+    ultimaLinha = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row
+    
+    ' Definir o intervalo de células a serem formatadas (apenas colunas B:M)
+    Set rng = ws.Range("B2:M" & ultimaLinha) ' Assumindo que a linha 1 é o cabeçalho
+    
+    ' Limpar formatação anterior
+    rng.Interior.Pattern = xlNone
+    
+    ' Percorrer cada célula na coluna DIA DA SEMANA e pintar as linhas correspondentes
+    For Each cel In ws.Range("M2:M" & ultimaLinha) ' Assumindo que a coluna DIA DA SEMANA é a coluna M
+        If cel.Value = "sab" Or cel.Value = "dom" Then
+            ' Pintar a linha inteira (apenas colunas B:M)
+            ws.Range(ws.Cells(cel.Row, 2), ws.Cells(cel.Row, 13)).Interior.Color = RGB(202, 237, 255)  ' Azul
+        End If
+    Next cel
+End Sub
+
+Sub CalcularPresenca(ws As Worksheet)
+    Dim ultimaLinha As Long
+    Dim i As Long
+    
+    ' Determinar a última linha na coluna A
+    ultimaLinha = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row
+    
+    ' Percorrer cada linha e calcular o CONT.SE na coluna N
+    For i = 2 To ultimaLinha ' Assumindo que a linha 1 é o cabeçalho
+        ' Fórmula CONT.SE na coluna N
+        ws.Cells(i, 14).Formula = "=COUNTIF(B" & i & ":L" & i & ",""PRESENÇA - OK"")"
+    Next i
+End Sub
