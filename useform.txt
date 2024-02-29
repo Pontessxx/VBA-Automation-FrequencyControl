@@ -1,3 +1,5 @@
+Dim coluna As Integer ' Declarar a variável coluna como uma variável de nível do módulo
+
 Sub PreencherComboBox()
     Dim ws As Worksheet
     Dim rng As Range
@@ -17,6 +19,7 @@ Sub PreencherComboBox()
         ComboBox1.AddItem cel.Value
     Next cel
 End Sub
+
 Sub PreencherComboBoxDia()
     Dim i As Integer
     
@@ -28,6 +31,7 @@ Sub PreencherComboBoxDia()
         ComboBox2.AddItem i
     Next i
 End Sub
+
 Sub PreencherComboBoxMes()
     Dim meses As Variant
     Dim i As Integer
@@ -43,11 +47,17 @@ Sub PreencherComboBoxMes()
         ComboBox3.AddItem meses(i)
     Next i
 End Sub
+
 Sub SalvarDados()
     Dim ws As Worksheet
     Dim linha As Integer
-    Dim coluna As Integer
     Dim resposta As VbMsgBoxResult
+    Dim dataBusca As Date
+    Dim ano As Integer
+    Dim mes As Integer
+    Dim dia As Integer
+    
+    dia = ComboBox2.Value
     
     ' Definir a planilha onde serão salvos os dados
     Set ws = ThisWorkbook.Sheets("Planilha1") ' Altere "Planilha1" para o nome da sua planilha
@@ -58,29 +68,47 @@ Sub SalvarDados()
     ' Determinar a coluna com base no valor selecionado na ComboBox3 (mês)
     Select Case ComboBox3.Value
         Case "Janeiro"
-            coluna = 2 ' Coluna B para Janeiro
+            mes = 1 '
         Case "Fevereiro"
-            coluna = 3 ' Coluna C para Fevereiro
+            mes = 2
         Case "Março"
-            coluna = 4 ' Coluna D para Março
+            mes = 3
         Case "Abril"
-            coluna = 5 ' Coluna E para Abril
+            mes = 4
         Case "Maio"
-            coluna = 6 ' Coluna F para Maio
+            mes = 5
         Case "Junho"
-            coluna = 7 ' Coluna G para Junho
+            mes = 6
         Case "Julho"
-            coluna = 8 ' Coluna H para Julho
+            mes = 7
         Case "Agosto"
-            coluna = 9 ' Coluna I para Agosto
+            mes = 8
         Case "Setembro"
-            coluna = 10 ' Coluna J para Setembro
+            mes = 9
         Case "Outubro"
-            coluna = 11 ' Coluna K para Outubro
+            mes = 10
         Case "Novembro"
-            coluna = 12 ' Coluna L para Novembro
+            mes = 11
         Case "Dezembro"
-            coluna = 13 ' Coluna M para Dezembro
+            mes = 12
+    End Select
+    
+    ' Define a linha que irei procurar atraves do dia mes e ano
+    dataBusca = DateSerial(Year(Date), mes, dia)
+    linha = ws.Cells.Find(What:=dataBusca, After:=ws.Cells(1, 1), LookIn:=xlFormulas, LookAt:=xlWhole, SearchOrder:=xlNext).Row
+    If linha = 0 Then
+        MsgBox "Data não encontrada na planilha", vbExclamation
+        Exit Sub
+    End If
+    
+    'separa as colunas para inserir os dados
+    Select Case ComboBox1.Value
+        Case "NOME UM"
+            coluna = 2 ' coluna B
+        Case "NOME DOIS"
+            coluna = 3 ' C
+        Case "NOME 3"
+            coluna = 4 'D
     End Select
     
     ' Verificar se a célula já possui um valor
@@ -96,15 +124,84 @@ Sub SalvarDados()
     
     ' Salvar o valor selecionado na ComboBox4 na célula correspondente
     ws.Cells(linha, coluna).Value = ComboBox4.Value
+    ComboBox1.Text = "" ' Limpar o texto da ComboBox1
+    ComboBox4.Text = "" ' Limpar o texto da ComboBox4
+    
+End Sub
+
+Private Sub ComboBox1_Change()
+    Select Case ComboBox1.Value
+        Case "NOME UM"
+            coluna = 2 ' coluna B
+        Case "NOME DOIS"
+            coluna = 3 ' C
+        Case "NOME 3"
+            coluna = 4 'D
+    End Select
+End Sub
+
+Private Sub CallUserForm2_Click()
+    NovoUserForm.Show
 End Sub
 
 Private Sub CommandButton1_Click()
-Call SalvarDados
+    Dim ws As Worksheet
+    Dim cel As Range
+    Dim nomeValido As Boolean
+    Dim resposta As VbMsgBoxResult
+    
+    ' Verificar se a ComboBox1 está vazia
+    If ComboBox1.Value = "" Then
+        MsgBox "Por favor, selecione um nome válido!", vbExclamation
+        Exit Sub
+    End If
+    
+    ' Verificar se a ComboBox4 está vazia
+    If ComboBox4.Value = "" Then
+        MsgBox "Por favor, selecione uma opção de PRESENÇA", vbExclamation
+        Exit Sub
+    End If
+    
+    ' Definir a planilha onde estão os nomes válidos
+    Set ws = ThisWorkbook.Sheets("Planilha1") ' Altere "Planilha1" para o nome da sua planilha
+    
+    ' Inicializar a variável nomeValido como False
+    nomeValido = False
+    
+    ' Verificar se o valor selecionado na ComboBox1 é válido
+    For Each cel In ws.Range("B1:D1")   'Range de cabecalhos com nomes na planilha
+        If cel.Value = ComboBox1.Value Then
+            nomeValido = True
+            Exit For
+        End If
+    Next cel
+    
+    ' Se o nome não estiver na lista, exibir mensagem de aviso e sair da sub-rotina
+    If Not nomeValido Then
+        MsgBox "Por favor, selecione um nome válido", vbExclamation
+        Exit Sub
+    End If
+    
+    ' Verificar se o valor selecionado na ComboBox4 é válido
+    Select Case ComboBox4.Value
+        Case "DIURNO", "FALTA", "FÉRIAS", "FOLGA PLANTAO SABADO", "PRESENÇA - OK"
+            ' Se o valor for válido, continuar com a ação
+        Case Else
+            MsgBox "Por favor, selecione uma opção válida de PRESENÇA", vbExclamation
+            Exit Sub
+    End Select
+    
+    Call SalvarDados
 End Sub
 
 Private Sub UserForm_Activate()
 Call PreencherComboBox
 Call PreencherComboBoxDia
 Call PreencherComboBoxMes
-ComboBox4.AddItem "teste"
+ComboBox4.AddItem "DIURNO"
+ComboBox4.AddItem "FALTA"
+ComboBox4.AddItem "FÉRIAS"
+ComboBox4.AddItem "FOLGA PLANTAO SABADO"
+ComboBox4.AddItem "PRESENÇA - OK"
 End Sub
+
