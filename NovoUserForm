@@ -23,8 +23,14 @@ Private Sub CriarPlanilhaButton_Click()
         ws.Cells(ultimaLinha, 1).Value = DateSerial(novoAno, 1, 1) + (ultimaLinha - 2)
     Next ultimaLinha
     
-    ' Aplicar a macro AdicionarDiaSemana para os anos selecionados
-    Application.Run "ThisWorkbook.AdicionarDiaSemana", ws
+    ' Aplicar a macro AdicionarDiaSemana para a nova planilha
+    AdicionarDiaSemana ws
+    
+    ' Pintar as linhas correspondentes aos sábados e domingos na nova planilha
+    PintarLinhasSabadoDomingo ws
+    
+    ' Fechar o formulário atual
+    Unload Me
 End Sub
 
 Private Sub UserForm_Initialize()
@@ -32,5 +38,6 @@ Private Sub UserForm_Initialize()
     For i = 2024 To 2040
         Me.ComboBoxAno.AddItem i
     Next i
-
+    
+    
 End Sub
