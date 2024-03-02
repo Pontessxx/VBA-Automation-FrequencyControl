@@ -1,0 +1,4 @@
+Sub Retângulo1_Clique()
+'UserForm1.Show
+SelecionaAno.Show
+End Sub
