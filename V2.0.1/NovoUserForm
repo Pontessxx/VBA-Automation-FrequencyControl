@@ -1,0 +1,46 @@
+Private Sub CriarPlanilhaButton_Click()
+    Dim ws As Worksheet
+    Dim novoAno As Integer
+    Dim ultimaLinha As Long
+    
+    ' Obter o ano selecionado na ComboBox
+    novoAno = Me.ComboBoxAno.Value
+    
+    ' Criar uma nova planilha com os mesmos cabeçalhos
+    Set ws = ThisWorkbook.Worksheets.Add
+    
+    ' Renomear a nova planilha
+    ws.Name = "Planilha" & novoAno
+    
+    ' Adicionar cabeçalhos
+    ws.Cells(1, 1).Value = "MÊS"
+    ws.Cells(1, 4).Value = "NOME UM"
+    ws.Cells(1, 5).Value = "NOME DOIS"
+    ws.Cells(1, 6).Value = "NOME 3"
+    
+    ' Adicionar datas para o ano selecionado
+    For ultimaLinha = 2 To 367 ' Assumindo um ano bissexto, então 366 dias possíveis, mais uma linha para o cabeçalho
+        ws.Cells(ultimaLinha, 1).Value = DateSerial(novoAno, 1, 1) + (ultimaLinha - 2)
+    Next ultimaLinha
+    
+    ' Aplicar a macro AdicionarDiaSemana para a nova planilha
+    AdicionarDiaSemana ws
+    
+    ' Pintar as linhas correspondentes aos sábados e domingos na nova planilha
+    PintarLinhasSabadoDomingo ws
+    
+    'Calcular o CONT.SE na coluna N
+    CalcularPresenca ws
+    
+    ' Fechar o formulário atual
+    Unload Me
+End Sub
+
+Private Sub UserForm_Initialize()
+    Dim i As Integer
+    For i = 2024 To 2040
+        Me.ComboBoxAno.AddItem i
+    Next i
+    
+    
+End Sub
