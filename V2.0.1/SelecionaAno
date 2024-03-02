@@ -1,0 +1,43 @@
+' Código para o formulário "SelecionaAno"
+
+Private Sub ButtonAnoSelecionado_Click()
+    ' Verificar se um ano foi selecionado
+    If Me.ComboBoxAno.ListIndex <> -1 Then
+        ' Extrair o ano da ComboBoxAno
+        Dim selectedYear As String
+        selectedYear = Me.ComboBoxAno.Value
+        
+        ' Atribuir o valor selecionado à propriedade AnoSelecionado do UserForm1
+        UserForm1.AnoSelecionado = selectedYear
+        ' Fechar o formulário SelecionaAno
+        Unload Me
+        UserForm1.Show
+    Else
+        ' Caso nenhum ano tenha sido selecionado, mostrar mensagem de erro
+        MsgBox "Por favor, selecione um ano.", vbExclamation
+    End If
+End Sub
+
+Private Sub CommandButton1_Click()
+    NovoUserForm.Show 'chama o form para criar nova planilha
+    Unload Me   'fecha esse form
+    SelecionaAno.Show 'abre novamente
+End Sub
+
+Private Sub UserForm_Initialize()
+    Dim ws As Worksheet
+    Dim wsName As String
+    
+    ' Limpar itens existentes na ComboBoxAno
+    Me.ComboBoxAno.Clear
+    
+    ' Adicionar os anos disponíveis, exceto o ano atual
+    For Each ws In ThisWorkbook.Worksheets
+        wsName = ws.Name
+        ' Verificar se o nome da planilha não é "Formulario" e se é um ano válido
+        If wsName <> "Formulario" And IsNumeric(Right(wsName, 4)) Then
+            Me.ComboBoxAno.AddItem Right(wsName, 4) ' Extrair apenas o ano do nome da planilha
+        End If
+    Next ws
+End Sub
+
