@@ -122,6 +122,9 @@ Sub SalvarDados()
     
     ' Salvar o valor selecionado na ComboBox4 na célula correspondente
     ws.Cells(linha, coluna).Value = ComboBox4.Value
+    
+
+    
     ComboBox1.Text = "" ' Limpar o texto da ComboBox1
     ComboBox4.Text = "" ' Limpar o texto da ComboBox4
 End Sub
@@ -146,15 +149,70 @@ End Sub
 Private Sub CommandButton1_Click()
     ' Botão para salvar os dados quando pressionado
     Call SalvarDados
+   
+End Sub
+
+Sub PreencherListBox()
+    Dim ws As Worksheet
+    Dim ultimaLinha As Long
+    Dim col As Integer
+    Dim linha As Long
+    Dim i As Long
+    Dim linhaStr As String
+    
+    ' Limpar itens existentes na ListBox1
+    ListBox1.Clear
+    
+    ' Definir a planilha onde os dados foram inseridos
+    Set ws = ThisWorkbook.Sheets("Planilha" & AnoSelecionado)
+    
+    ' Determinar a última linha com dados na coluna A
+    ultimaLinha = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+    
+    ' Adicionar o cabeçalho da tabela à ListBox1 se a ListBox estiver vazia
+    If ListBox1.ListCount = 0 Then
+        ListBox1.AddItem "MÊS" & vbTab & "DIA DA SEMANA" & vbTab & "TOTAL DE RECURSOS" & vbTab & "NOME UM" & vbTab & "NOME DOIS" & vbTab & "NOME 3" & vbTab & "NOME 4" & vbTab & "NOME 5" & vbTab & "NOME 6" & vbTab & "NOME 7" & vbTab & "NOME 8" & vbTab & "NOME 9"
+    End If
+    
+    ' Adicionar os dados da planilha à ListBox1, começando da segunda linha
+    For linha = 2 To ultimaLinha
+        ' Inicializar uma string para armazenar os valores da linha atual
+        linhaStr = ""
+        
+        ' Adicionar Mês, Dia da Semana e Ano
+        linhaStr = Format(ws.Cells(linha, 1).Value, "dd/mm/yyyy") & vbTab
+        linhaStr = linhaStr & WorksheetFunction.Text(ws.Cells(linha, 1).Value, "ddd") & vbTab
+        
+        ' Adicionar Total de Recursos
+        linhaStr = linhaStr & ws.Cells(linha, 2).Value & vbTab
+        
+        ' Adicionar Nomes
+        For col = 4 To 12 ' Colunas D a L (NOME UM a NOME 9)
+            linhaStr = linhaStr & ws.Cells(linha, col).Value & vbTab
+        Next col
+        
+        ' Adicionar a string com os valores da linha atual à ListBox1
+        ListBox1.AddItem linhaStr
+    Next linha
+End Sub
+
+
+Private Sub CommandButton2_Click()
+  AdicionaNome.AnoSelecionado = AnoSelecionado
+AdicionaNome.Show
 End Sub
 
 Private Sub UserForm_Activate()
     Call PreencherComboBox
     Call PreencherComboBoxDia
     Call PreencherComboBoxMes
+    Call PreencherListBox
     ComboBox4.AddItem "DIURNO"
     ComboBox4.AddItem "FALTA"
     ComboBox4.AddItem "FÉRIAS"
     ComboBox4.AddItem "FOLGA PLANTAO SABADO"
     ComboBox4.AddItem "PRESENÇA - OK"
+    
+    LabelAno.Caption = AnoSelecionado
 End Sub
+
