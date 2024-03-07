@@ -1,158 +1,149 @@
-Dim coluna As Integer ' Declarar a variável coluna como uma variável de nível do módulo
+Private colunas As Object
+Private coluna As Integer ' Declarar a variável coluna como uma variável de nível do módulo
 Public AnoSelecionado As String
 
 Sub PreencherComboBox()
-    Dim ws As Worksheet
-    Dim rng As Range
-    Dim cel As Range
-    
-    ' Definir a planilha onde estão os valores
-    'Set ws = ThisWorkbook.Sheets("Planilha2024") ' Altere "Planilha" para o nome da sua planilha
-    
-    ' Definir a planilha onde serão salvos os dados
-    Set ws = ThisWorkbook.Sheets("Planilha" & AnoSelecionado)
-    
-    ' Definir o intervalo de células B1:M1 (assumindo que os nomes estão nas colunas B, C, D, etc.)
-    Set rng = ws.Range("D1:M1")
-    
-    ' Limpar os itens existentes na ComboBox
-    ComboBox1.Clear
-    
-    ' Adicionar os valores das células ao ComboBox
-    For Each cel In rng
-        ComboBox1.AddItem cel.Value
-    Next cel
+    ' Subroutine para preencher a ComboBox1 com os nomes existentes
+    AtualizarColunas
+    AtualizarComboBoxNomes
 End Sub
 
 Sub PreencherComboBoxDia()
+    ' Subroutine para preencher a ComboBox2 com os dias do mês
     Dim i As Integer
-    
-    ' Limpar itens existentes na ComboBox2
     ComboBox2.Clear
-    
-    ' Adicionar os dias do mês à ComboBox2
     For i = 1 To 31
         ComboBox2.AddItem i
     Next i
 End Sub
 
 Sub PreencherComboBoxMes()
+    ' Subroutine para preencher a ComboBox3 com os meses do ano
     Dim meses As Variant
     Dim i As Integer
-    
-    ' Definir os nomes dos meses
     meses = Array("Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro")
-    
-    ' Limpar itens existentes na ComboBox3
     ComboBox3.Clear
-    
-    ' Adicionar os meses à ComboBox3
     For i = LBound(meses) To UBound(meses)
         ComboBox3.AddItem meses(i)
     Next i
 End Sub
 
 Sub SalvarDados()
+    ' Subroutine para salvar os dados na planilha
     Dim ws As Worksheet
-    Dim linha As Long ' Alterado para Long para evitar possíveis erros em planilhas grandes
+    Dim linha As Long
     Dim resposta As VbMsgBoxResult
     Dim dataBusca As Date
     Dim mes As Integer
     Dim dia As Integer
-    Dim coluna As Integer ' Declarar a variável coluna como uma variável local
 
-    ' Verificar se a ComboBox1 está vazia
     If ComboBox1.Value = "" Then
         MsgBox "Celula de nome vazio, selecione um nome válido!", vbExclamation
         Exit Sub
     End If
 
-    ' Verificar se a ComboBox2 está vazia
     If ComboBox2.Value = "" Then
         MsgBox "Data Invalida, selecione um dia válido!", vbExclamation
         Exit Sub
     End If
     
-    ' Verificar se a ComboBox3 está vazia
     If ComboBox3.Value = "" Then
         MsgBox "Por favor, selecione um mês válido!", vbExclamation
         Exit Sub
     End If
     
-    ' Verificar se a ComboBox4 está vazia
     If ComboBox4.Value = "" Then
         MsgBox "Por favor, selecione uma opção de PRESENÇA", vbExclamation
         Exit Sub
     End If
 
-    ' Definir a planilha onde serão salvos os dados
     Set ws = ThisWorkbook.Sheets("Planilha" & AnoSelecionado)
     
-    ' Determinar a data de busca com base na ComboBox2 (dia), ComboBox3 (mês) e ano atual
     dia = ComboBox2.Value
     mes = Month(DateValue("01-" & ComboBox3.Value & "-" & AnoSelecionado))
     dataBusca = DateSerial(CInt(AnoSelecionado), mes, dia)
     
-    ' Procurar a linha correspondente à data de busca na coluna A
-    linha = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row ' Última linha na coluna A
-    
-    ' Loop para encontrar a linha com a data de busca
+    linha = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
     Do While linha > 1 And ws.Cells(linha, "A").Value <> dataBusca
         linha = linha - 1
     Loop
     
-    ' Verificar se a linha foi encontrada
     If linha = 1 Then
         MsgBox "Data não encontrada na planilha", vbExclamation
         Exit Sub
     End If
     
-    ' Determinar a coluna com base no valor selecionado na ComboBox1 (nome)
-    Select Case ComboBox1.Value
-        Case "NOME UM"
-            coluna = 4 ' coluna D
-        Case "NOME DOIS"
-            coluna = 5 ' coluna E
-        Case "NOME 3"
-            coluna = 6 ' coluna F
-        Case Else
-            MsgBox "Selecione um nome válido.", vbExclamation
-            Exit Sub
-    End Select
+    If Not colunas Is Nothing Then
+        If ComboBox1.Value <> "" Then
+            If colunas.Exists(ComboBox1.Value) Then
+                coluna = colunas(ComboBox1.Value)
+            Else
+                MsgBox "Selecione um nome válido.", vbExclamation
+                Exit Sub
+            End If
+        End If
+    Else
+        MsgBox "As colunas ainda não foram atualizadas.", vbExclamation
+        Exit Sub
+    End If
     
-    ' Salvar o valor selecionado na ComboBox4 na célula correspondente
     ws.Cells(linha, coluna).Value = ComboBox4.Value
     
+    ComboBox1.Text = ""
+    ComboBox4.Text = ""
+End Sub
 
+Private Sub AtualizarColunas()
+    ' Subroutine para criar o mapeamento de nomes para colunas
+    Set colunas = CreateObject("Scripting.Dictionary")
+    Dim ws As Worksheet
+    Dim rng As Range
+    Dim cel As Range
     
-    ComboBox1.Text = "" ' Limpar o texto da ComboBox1
-    ComboBox4.Text = "" ' Limpar o texto da ComboBox4
+    Set ws = ThisWorkbook.Sheets("Planilha" & AnoSelecionado)
+    Set rng = ws.Range("D1:M1")
+    
+    For Each cel In rng
+        colunas(cel.Value) = cel.Column
+    Next cel
+End Sub
+
+Private Sub AtualizarComboBoxNomes()
+    ' Subroutine para atualizar dinamicamente a ComboBox1 com os nomes existentes
+    ComboBox1.Clear
+    Dim nome As Variant
+    For Each nome In colunas.Keys
+        ComboBox1.AddItem nome
+    Next nome
 End Sub
 
 Private Sub ComboBox1_Change()
-    ' Esta sub-rotina é acionada sempre que o valor da ComboBox1 é alterado
-    ' Atualize a variável coluna quando a ComboBox1 é alterada
-    Select Case ComboBox1.Value
-        Case "NOME UM"
-            coluna = 4 ' coluna D
-        Case "NOME DOIS"
-            coluna = 5 ' coluna E
-        Case "NOME 3"
-            coluna = 6 ' coluna F
-    End Select
+    ' Subroutine acionada quando o valor da ComboBox1 é alterado
+    If Not colunas Is Nothing Then
+        If ComboBox1.Value <> "" Then
+            If colunas.Exists(ComboBox1.Value) Then
+                coluna = colunas(ComboBox1.Value)
+            Else
+                MsgBox "Selecione um nome válido.", vbExclamation
+            End If
+        End If
+    Else
+        MsgBox "As colunas ainda não foram atualizadas.", vbExclamation
+    End If
 End Sub
 
 Private Sub CallUserForm2_Click()
+    ' Botão para chamar o UserForm2
     NovoUserForm.Show
 End Sub
 
 Private Sub CommandButton1_Click()
-    ' Botão para salvar os dados quando pressionado
-    Call SalvarDados
-   
+    ' Botão para salvar os dados
+    SalvarDados
 End Sub
 
 Sub PreencherListBox()
+    ' Subroutine para preencher a ListBox1 com os dados da planilha
     Dim ws As Worksheet
     Dim ultimaLinha As Long
     Dim col As Integer
@@ -160,59 +151,45 @@ Sub PreencherListBox()
     Dim i As Long
     Dim linhaStr As String
     
-    ' Limpar itens existentes na ListBox1
     ListBox1.Clear
-    
-    ' Definir a planilha onde os dados foram inseridos
     Set ws = ThisWorkbook.Sheets("Planilha" & AnoSelecionado)
-    
-    ' Determinar a última linha com dados na coluna A
     ultimaLinha = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
     
-    ' Adicionar o cabeçalho da tabela à ListBox1 se a ListBox estiver vazia
     If ListBox1.ListCount = 0 Then
         ListBox1.AddItem "MÊS" & vbTab & "DIA DA SEMANA" & vbTab & "TOTAL DE RECURSOS" & vbTab & "NOME UM" & vbTab & "NOME DOIS" & vbTab & "NOME 3" & vbTab & "NOME 4" & vbTab & "NOME 5" & vbTab & "NOME 6" & vbTab & "NOME 7" & vbTab & "NOME 8" & vbTab & "NOME 9"
     End If
     
-    ' Adicionar os dados da planilha à ListBox1, começando da segunda linha
     For linha = 2 To ultimaLinha
-        ' Inicializar uma string para armazenar os valores da linha atual
         linhaStr = ""
-        
-        ' Adicionar Mês, Dia da Semana e Ano
         linhaStr = Format(ws.Cells(linha, 1).Value, "dd/mm/yyyy") & vbTab
         linhaStr = linhaStr & WorksheetFunction.Text(ws.Cells(linha, 1).Value, "ddd") & vbTab
-        
-        ' Adicionar Total de Recursos
         linhaStr = linhaStr & ws.Cells(linha, 2).Value & vbTab
-        
-        ' Adicionar Nomes
-        For col = 4 To 12 ' Colunas D a L (NOME UM a NOME 9)
+        For col = 4 To 12
             linhaStr = linhaStr & ws.Cells(linha, col).Value & vbTab
         Next col
-        
-        ' Adicionar a string com os valores da linha atual à ListBox1
         ListBox1.AddItem linhaStr
     Next linha
 End Sub
 
-
 Private Sub CommandButton2_Click()
-  AdicionaNome.AnoSelecionado = AnoSelecionado
-AdicionaNome.Show
+    ' Botão para chamar o UserForm AdicionaNome
+    AdicionaNome.AnoSelecionado = AnoSelecionado
+    AdicionaNome.Show
+    'fecha formulario
+    Unload Me
 End Sub
 
 Private Sub UserForm_Activate()
-    Call PreencherComboBox
-    Call PreencherComboBoxDia
-    Call PreencherComboBoxMes
-    Call PreencherListBox
+    ' Evento ativado quando o UserForm é ativado
+    PreencherComboBox
+    PreencherComboBoxDia
+    PreencherComboBoxMes
+    PreencherListBox
     ComboBox4.AddItem "DIURNO"
     ComboBox4.AddItem "FALTA"
     ComboBox4.AddItem "FÉRIAS"
     ComboBox4.AddItem "FOLGA PLANTAO SABADO"
     ComboBox4.AddItem "PRESENÇA - OK"
-    
     LabelAno.Caption = AnoSelecionado
 End Sub
 
