@@ -1,0 +1,62 @@
+'######################################
+'########## Adiciona nomes ############
+'######################################
+'1 - Receber o nome através da text box
+'2 - Conseguir salvar na Planilha_Nome o nome na coluna A, apos os nomes que já existiam
+'3 - Passar o Numero e a Letra da coluna na coluna B  e C ao nome que foi inserido
+'4 - Pegar o Valor do AnoSelecionado através da label
+'5 - Entrar na Planilha & AnoSelecionado
+'6 - Colocar o Nome adicionado da Planilha_Nomes em sua respectiva coluna
+'7 - Caso o usuario insira novos nomes refazer os passos de salvar, adicionar numero, entrar na planilha, preencher o nome na coluna correspondente ao numeo ou letra
+'8 - Evite inserir apenas um nome da Planilha_Nomes por vez, passe os Nomes que estão da coluna A nesta planilha, para suas respectivas colunas na Planilha & AnoSeleiconado
+
+Option Explicit
+
+Public AnoSelecionado As String ' Declaração da variável AnoSelecionado
+
+Private Sub AdicionarNomeNovo(nome As String)
+    Dim wsNomes As Worksheet
+    Dim wsPrincipal As Worksheet
+    Dim col As Long
+    Dim ultimaLinha As Long
+    Dim letraColuna As String ' Variável para armazenar a letra da coluna
+    
+    ' Definir a planilha "Planilha_Nomes"
+    Set wsNomes = ThisWorkbook.Sheets("Planilha_Nomes")
+    
+    ' Determinar a próxima linha disponível na coluna A
+    ultimaLinha = wsNomes.Cells(wsNomes.Rows.Count, 1).End(xlUp).Row + 1
+    
+    ' Inserir o novo nome na coluna A na próxima linha disponível
+    wsNomes.Cells(ultimaLinha, 1).Value = nome
+    
+    ' Inserir o número da coluna na coluna B
+    wsNomes.Cells(ultimaLinha, 2).Value = ultimaLinha + 2
+    
+    ' Definir a planilha principal (onde os nomes serão inseridos)
+    Set wsPrincipal = ThisWorkbook.Sheets("Planilha" & AnoSelecionado)
+    
+    ' Verificar se o número da coluna está dentro do intervalo esperado na planilha principal
+    col = ultimaLinha + 1 ' Adicionando 1 ao número da linha para corresponder à coluna correta
+    If col >= 4 Then ' Colunas D (4)
+        ' Converter o número da coluna para a letra correspondente
+        letraColuna = Split(wsPrincipal.Cells(1, col).Address, "$")(1)
+        
+        ' Inserir o nome na planilha principal na coluna correspondente ao número da coluna
+        wsPrincipal.Cells(1, letraColuna).Value = nome
+    Else
+        MsgBox "A coluna calculada está fora do intervalo esperado.", vbExclamation
+    End If
+End Sub
+
+Private Sub CommandButton1_Click()
+    ' Adiciona o novo nome à matriz de nomes
+    AdicionarNomeNovo Me.TextBox1.Value
+    TextBox1.Value = ""
+End Sub
+
+Private Sub UserForm_Activate()
+    LabelAno.Caption = AnoSelecionado
+End Sub
+
+
