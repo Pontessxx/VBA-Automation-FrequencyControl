@@ -1,0 +1,50 @@
+Private Sub CriarPlanilhaButton_Click()
+    Dim ws As Worksheet
+    Dim novoAno As Integer
+    Dim ultimaLinha As Long
+    Dim wsNomes As Worksheet
+    Dim i As Long
+    Dim ultimaLinhaNomes As Long
+    
+    ' Obter o ano selecionado na ComboBox
+    novoAno = Me.ComboBoxAno.Value
+    
+    ' Criar uma nova planilha
+    Set ws = ThisWorkbook.Worksheets.Add
+    ws.Name = "Planilha" & novoAno ' Renomear a nova planilha
+    
+    ' Definir cabeçalhos padrão para as três primeiras colunas
+    ws.Cells(1, 1).Value = "MÊS"
+    ws.Cells(1, 2).Value = "DIA DA SEMANA"
+    ws.Cells(1, 3).Value = "TOTAL DE RECURSOS"
+    
+    ' Obter a planilha "Planilha_Nomes"
+    Set wsNomes = ThisWorkbook.Sheets("Planilha_Nomes")
+    ultimaLinhaNomes = wsNomes.Cells(wsNomes.Rows.Count, "A").End(xlUp).Row
+    
+    ' Preencher os cabeçalhos na nova planilha com os nomes da "Planilha_Nomes"
+    For i = 1 To ultimaLinhaNomes
+        ws.Cells(1, i + 3).Value = wsNomes.Cells(i, "A").Value
+    Next i
+    
+    ' Adicionar datas para o ano selecionado
+    For ultimaLinha = 2 To 367 ' Para um ano bissexto, são 366 dias + 1 linha para o cabeçalho
+        ws.Cells(ultimaLinha, 1).Value = DateSerial(novoAno, 1, 1) + (ultimaLinha - 2)
+    Next ultimaLinha
+    
+    ' Aqui, você deverá chamar suas macros específicas como AdicionarDiaSemana, PintarLinhasSabadoDomingo e CalcularPresenca
+    AdicionarDiaSemana ws
+    PintarLinhasSabadoDomingo ws
+    CalcularPresenca ws
+    
+    ' Fechar o formulário atual
+    Unload Me
+End Sub
+
+Private Sub UserForm_Initialize()
+    Dim i As Integer
+    For i = 2024 To 2040
+        Me.ComboBoxAno.AddItem i
+    Next i
+End Sub
+
