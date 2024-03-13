@@ -25,32 +25,41 @@ Private Sub BotaoExcluir_Click()
     Dim ultimaLinha As Long
     Dim colunaIndex As Long
     Dim colunaLetra As String
+    Dim resposta As VbMsgBoxResult
     
     If Me.ComboBox1.ListIndex <> -1 Then
         selectedName = Me.ComboBox1.Value
-        Set wsNomes = ThisWorkbook.Sheets("Planilha_Nomes")
-        ultimaLinha = wsNomes.Cells(wsNomes.Rows.Count, "A").End(xlUp).Row
         
-        ' Procurar o nome na Planilha_Nomes e obter a coluna para exclusão
-        For i = 1 To ultimaLinha
-            If wsNomes.Cells(i, "A").Value = selectedName Then
-                ' Obter o índice da coluna antes de excluir a linha
-                colunaIndex = wsNomes.Cells(i, "B").Value
-                colunaLetra = wsNomes.Cells(i, "C").Value
-                
-                ' Remover nome da Planilha_Nomes
-                wsNomes.Rows(i).Delete
-                Exit For
-            End If
-        Next i
+        ' Perguntar se realmente deseja excluir
+        resposta = MsgBox("Deseja realmente excluir o nome '" & selectedName & "' da planilha?", vbQuestion + vbYesNo, "Confirmar Exclusão")
         
-        ' Remover coluna correspondente na planilha do ano selecionado
-        Set wsPrincipal = ThisWorkbook.Sheets("Planilha" & AnoSelecionado)
-        wsPrincipal.Columns(colunaLetra & ":" & colunaLetra).Delete
-        
-        ' Atualizar ComboBox após exclusão
-        Me.ComboBox1.Clear
-        UserForm_Initialize
+        If resposta = vbYes Then
+            Set wsNomes = ThisWorkbook.Sheets("Planilha_Nomes")
+            ultimaLinha = wsNomes.Cells(wsNomes.Rows.Count, "A").End(xlUp).Row
+            
+            ' Procurar o nome na Planilha_Nomes e obter a coluna para exclusão
+            For i = 1 To ultimaLinha
+                If wsNomes.Cells(i, "A").Value = selectedName Then
+                    ' Obter o índice da coluna antes de excluir a linha
+                    colunaIndex = wsNomes.Cells(i, "B").Value
+                    colunaLetra = wsNomes.Cells(i, "C").Value
+                    
+                    ' Remover nome da Planilha_Nomes
+                    wsNomes.Rows(i).Delete
+                    Exit For
+                End If
+            Next i
+            
+            ' Remover coluna correspondente na planilha do ano selecionado
+            Set wsPrincipal = ThisWorkbook.Sheets("Planilha" & AnoSelecionado)
+            wsPrincipal.Columns(colunaLetra & ":" & colunaLetra).Delete
+            
+            ' Atualizar ComboBox após exclusão
+            Me.ComboBox1.Clear
+            UserForm_Initialize
+        Else
+            ' Se o usuário clicou em Não, não faça nada
+        End If
     Else
         MsgBox "Por favor, selecione um nome para excluir.", vbExclamation
     End If
