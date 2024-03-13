@@ -1,0 +1,200 @@
+Private colunas As Object
+Private coluna As Integer ' Declarar a variável coluna como uma variável de nível do módulo
+Public AnoSelecionado As String
+
+Sub PreencherComboBox()
+    ' Subroutine para preencher a ComboBox1 com os nomes existentes
+    AtualizarColunas
+    AtualizarComboBoxNomes
+End Sub
+
+Sub PreencherComboBoxDia()
+    ' Subroutine para preencher a ComboBox2 com os dias do mês
+    Dim i As Integer
+    ComboBox2.Clear
+    For i = 1 To 31
+        ComboBox2.AddItem i
+    Next i
+End Sub
+
+Sub PreencherComboBoxMes()
+    ' Subroutine para preencher a ComboBox3 com os meses do ano
+    Dim meses As Variant
+    Dim i As Integer
+    meses = Array("Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro")
+    ComboBox3.Clear
+    For i = LBound(meses) To UBound(meses)
+        ComboBox3.AddItem meses(i)
+    Next i
+End Sub
+
+Sub SalvarDados()
+    ' Subroutine para salvar os dados na planilha
+    Dim ws As Worksheet
+    Dim linha As Long
+    Dim resposta As VbMsgBoxResult
+    Dim dataBusca As Date
+    Dim mes As Integer
+    Dim dia As Integer
+
+    If ComboBox1.Value = "" Then
+        MsgBox "Celula de nome vazio, selecione um nome válido!", vbExclamation
+        Exit Sub
+    End If
+
+    If ComboBox2.Value = "" Then
+        MsgBox "Data Invalida, selecione um dia válido!", vbExclamation
+        Exit Sub
+    End If
+    
+    If ComboBox3.Value = "" Then
+        MsgBox "Por favor, selecione um mês válido!", vbExclamation
+        Exit Sub
+    End If
+    
+    If ComboBox4.Value = "" Then
+        MsgBox "Por favor, selecione uma opção de PRESENÇA", vbExclamation
+        Exit Sub
+    End If
+
+    Set ws = ThisWorkbook.Sheets("Planilha" & AnoSelecionado)
+    
+    dia = ComboBox2.Value
+    mes = Month(DateValue("01-" & ComboBox3.Value & "-" & AnoSelecionado))
+    dataBusca = DateSerial(CInt(AnoSelecionado), mes, dia)
+    
+    linha = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+    Do While linha > 1 And ws.Cells(linha, "A").Value <> dataBusca
+        linha = linha - 1
+    Loop
+    
+    If linha = 1 Then
+        MsgBox "Data não encontrada na planilha", vbExclamation
+        Exit Sub
+    End If
+    
+    If Not colunas Is Nothing Then
+        If ComboBox1.Value <> "" Then
+            If colunas.Exists(ComboBox1.Value) Then
+                coluna = colunas(ComboBox1.Value)
+            Else
+                MsgBox "Selecione um nome válido.", vbExclamation
+                Exit Sub
+            End If
+        End If
+    Else
+        MsgBox "As colunas ainda não foram atualizadas.", vbExclamation
+        Exit Sub
+    End If
+    
+    ws.Cells(linha, coluna).Value = ComboBox4.Value
+    
+    ComboBox1.Text = ""
+    ComboBox4.Text = ""
+End Sub
+
+Private Sub AtualizarColunas()
+    ' Subroutine para criar o mapeamento de nomes para colunas
+    Set colunas = CreateObject("Scripting.Dictionary")
+    Dim ws As Worksheet
+    Dim rng As Range
+    Dim cel As Range
+    
+    Set ws = ThisWorkbook.Sheets("Planilha" & AnoSelecionado)
+    Set rng = ws.Range("D1:M1")
+    
+    For Each cel In rng
+        colunas(cel.Value) = cel.Column
+    Next cel
+End Sub
+
+Private Sub AtualizarComboBoxNomes()
+    ' Subroutine para atualizar dinamicamente a ComboBox1 com os nomes existentes
+    ComboBox1.Clear
+    Dim nome As Variant
+    For Each nome In colunas.Keys
+        ComboBox1.AddItem nome
+    Next nome
+End Sub
+
+Private Sub ComboBox1_Change()
+    ' Subroutine acionada quando o valor da ComboBox1 é alterado
+    If Not colunas Is Nothing Then
+        If ComboBox1.Value <> "" Then
+            If colunas.Exists(ComboBox1.Value) Then
+                coluna = colunas(ComboBox1.Value)
+            Else
+                MsgBox "Selecione um nome válido.", vbExclamation
+            End If
+        End If
+    Else
+        MsgBox "As colunas ainda não foram atualizadas.", vbExclamation
+    End If
+End Sub
+
+Private Sub CallUserForm2_Click()
+    ' Botão para chamar o UserForm2
+    NovoUserForm.Show
+End Sub
+
+Private Sub CommandButton1_Click()
+    ' Botão para salvar os dados
+    SalvarDados
+End Sub
+
+Sub PreencherListBox()
+    ' Subroutine para preencher a ListBox1 com os dados da planilha
+    Dim ws As Worksheet
+    Dim ultimaLinha As Long
+    Dim col As Integer
+    Dim linha As Long
+    Dim i As Long
+    Dim linhaStr As String
+    
+    ListBox1.Clear
+    Set ws = ThisWorkbook.Sheets("Planilha" & AnoSelecionado)
+    ultimaLinha = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+    
+    If ListBox1.ListCount = 0 Then
+        ListBox1.AddItem "MÊS" & vbTab & "DIA DA SEMANA" & vbTab & "TOTAL DE RECURSOS" & vbTab & "NOME UM" & vbTab & "NOME DOIS" & vbTab & "NOME 3" & vbTab & "NOME 4" & vbTab & "NOME 5" & vbTab & "NOME 6" & vbTab & "NOME 7" & vbTab & "NOME 8" & vbTab & "NOME 9"
+    End If
+    
+    For linha = 2 To ultimaLinha
+        linhaStr = ""
+        linhaStr = Format(ws.Cells(linha, 1).Value, "dd/mm/yyyy") & vbTab
+        linhaStr = linhaStr & WorksheetFunction.Text(ws.Cells(linha, 1).Value, "ddd") & vbTab
+        linhaStr = linhaStr & ws.Cells(linha, 2).Value & vbTab
+        For col = 4 To 12
+            linhaStr = linhaStr & ws.Cells(linha, col).Value & vbTab
+        Next col
+        ListBox1.AddItem linhaStr
+    Next linha
+End Sub
+
+Private Sub CommandButton2_Click()
+    ' Botão para chamar o UserForm AdicionaNome
+    AdicionaNome.AnoSelecionado = AnoSelecionado
+    AdicionaNome.Show
+    'fecha formulario
+    Unload Me
+End Sub
+
+Private Sub CommandButton3_Click()
+    ExcluirNome.AnoSelecionado = AnoSelecionado
+    ExcluirNome.Show
+End Sub
+
+Private Sub UserForm_Activate()
+    ' Evento ativado quando o UserForm é ativado
+    PreencherComboBox
+    PreencherComboBoxDia
+    PreencherComboBoxMes
+    PreencherListBox
+    ComboBox4.AddItem "DIURNO"
+    ComboBox4.AddItem "FALTA"
+    ComboBox4.AddItem "FÉRIAS"
+    ComboBox4.AddItem "FOLGA PLANTAO SABADO"
+    ComboBox4.AddItem "PRESENÇA - OK"
+    LabelAno.Caption = AnoSelecionado
+End Sub
+
