@@ -1,0 +1,93 @@
+'######################################
+'########## Adiciona nomes ############
+'######################################
+'1 - Receber o nome através da text box
+'2 - Conseguir salvar na Planilha_Nome o nome na coluna A, apos os nomes que já existiam
+'3 - Passar o Numero e a Letra da coluna na coluna B  e C ao nome que foi inserido
+'4 - Pegar o Valor do AnoSelecionado através da label
+'5 - Entrar na Planilha & AnoSelecionado
+'6 - Colocar o Nome adicionado da Planilha_Nomes em sua respectiva coluna
+'7 - Caso o usuario insira novos nomes refazer os passos de salvar, adicionar numero, entrar na planilha, preencher o nome na coluna correspondente ao numeo ou letra
+'8 - Evite inserir apenas um nome da Planilha_Nomes por vez, passe os Nomes que estão da coluna A nesta planilha, para suas respectivas colunas na Planilha & AnoSeleiconado
+
+Option Explicit
+
+Public AnoSelecionado As String
+
+Private Sub AdicionarNomeNovo(nome As String)
+    Dim wsNomes As Worksheet
+    Dim wsPrincipal As Worksheet
+    Dim ultimaLinha As Long
+    Dim ultimaColuna As Long
+    Dim letraColuna As String
+
+    ' Definir a planilha "Planilha_Nomes"
+    Set wsNomes = ThisWorkbook.Sheets("Planilha_Nomes")
+
+    ' Determinar a próxima linha disponível na coluna A
+    ultimaLinha = wsNomes.Cells(wsNomes.Rows.Count, "A").End(xlUp).Row + 1
+
+    ' Inserir o novo nome na coluna A na próxima linha disponível
+    wsNomes.Cells(ultimaLinha, "A").Value = nome
+
+    ' Definir a planilha principal (onde os nomes serão inseridos como cabeçalhos)
+    Set wsPrincipal = ThisWorkbook.Sheets("Planilha" & AnoSelecionado)
+
+    ' Determinar a próxima coluna disponível (a partir de coluna 4, que corresponde a D)
+    ultimaColuna = wsPrincipal.Cells(1, wsPrincipal.Columns.Count).End(xlToLeft).Column + 1
+
+    ' Converter o número da coluna para a letra correspondente
+    letraColuna = ColunaParaLetra(ultimaColuna)
+    
+    ' Inserir o nome na coluna correspondente na planilha principal
+    wsPrincipal.Cells(1, ultimaColuna).Value = nome
+
+    ' Atualizar colunas B e C em Planilha_Nomes com o número e a letra da coluna
+    wsNomes.Cells(ultimaLinha, "B").Value = ultimaColuna
+    wsNomes.Cells(ultimaLinha, "C").Value = letraColuna
+    
+    ' Após inserir o nome e atualizar a planilha
+    Call PintarSabEDom(wsPrincipal)
+End Sub
+Sub PintarSabEDom(ws As Worksheet)
+    Dim ultimaLinha As Long
+    Dim i As Long
+    Dim cel As Range
+
+    ' Assumindo que a coluna 2 (B) contém os dias da semana
+    ultimaLinha = ws.Cells(ws.Rows.Count, 2).End(xlUp).Row
+
+    For i = 2 To ultimaLinha
+        Set cel = ws.Cells(i, 2) ' Coluna do dia da semana
+        If cel.Value = "sab" Or cel.Value = "dom" Then
+            ' Pintar a linha correspondente ao sábado ou domingo
+            cel.EntireRow.Interior.Color = RGB(202, 237, 255) ' Cor de sua escolha
+        End If
+    Next i
+End Sub
+Function ColunaParaLetra(col As Long) As String
+    Dim Divisor As Long
+    Dim Resto As Long
+    Dim Letra As String
+    
+    Divisor = col
+    Letra = ""
+    
+    While Divisor > 0
+        Resto = (Divisor - 1) Mod 26
+        Letra = Chr(Resto + 65) & Letra
+        Divisor = Int((Divisor - Resto) / 26)
+    Wend
+    
+    ColunaParaLetra = Letra
+End Function
+Private Sub CommandButton1_Click()
+    ' Adiciona o novo nome à matriz de nomes
+    AdicionarNomeNovo Me.TextBox1.Value
+    TextBox1.Value = ""
+End Sub
+
+
+Private Sub UserForm_Activate()
+    LabelAno.Caption = AnoSelecionado
+End Sub
