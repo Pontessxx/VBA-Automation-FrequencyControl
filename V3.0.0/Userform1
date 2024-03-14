@@ -94,18 +94,25 @@ Sub SalvarDados()
 End Sub
 
 Private Sub AtualizarColunas()
-    ' Subroutine para criar o mapeamento de nomes para colunas
+      ' Limpa o dicionário para atualizar com novos valores
     Set colunas = CreateObject("Scripting.Dictionary")
     Dim ws As Worksheet
-    Dim rng As Range
-    Dim cel As Range
-    
+    Dim ultimaColuna As Long
+    Dim i As Long
+
     Set ws = ThisWorkbook.Sheets("Planilha" & AnoSelecionado)
-    Set rng = ws.Range("D1:M1")
     
-    For Each cel In rng
-        colunas(cel.Value) = cel.Column
-    Next cel
+    ' Encontra a última coluna usada na linha 1, que contém os nomes
+    ultimaColuna = ws.Cells(1, ws.Columns.Count).End(xlToLeft).Column
+    
+    ' Loop para adicionar nomes e suas colunas ao dicionário
+    For i = 4 To ultimaColuna ' Assumindo que os nomes começam na coluna 4
+        Dim nome As String
+        nome = ws.Cells(1, i).Value
+        If nome <> "" Then ' Verifica se o nome não está vazio
+            colunas(nome) = i ' Adiciona o nome e a coluna ao dicionário
+        End If
+    Next i
 End Sub
 
 Private Sub AtualizarComboBoxNomes()
@@ -140,56 +147,86 @@ End Sub
 Private Sub CommandButton1_Click()
     ' Botão para salvar os dados
     SalvarDados
+    PreencherListBox
 End Sub
 
-Sub PreencherListBox()
-    ' Subroutine para preencher a ListBox1 com os dados da planilha
-    Dim ws As Worksheet
-    Dim ultimaLinha As Long
-    Dim col As Integer
-    Dim linha As Long
-    Dim i As Long
-    Dim linhaStr As String
-    
-    ListBox1.Clear
-    Set ws = ThisWorkbook.Sheets("Planilha" & AnoSelecionado)
-    ultimaLinha = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
-    
-    If ListBox1.ListCount = 0 Then
-        ListBox1.AddItem "MÊS" & vbTab & "DIA DA SEMANA" & vbTab & "TOTAL DE RECURSOS" & vbTab & "NOME UM" & vbTab & "NOME DOIS" & vbTab & "NOME 3" & vbTab & "NOME 4" & vbTab & "NOME 5" & vbTab & "NOME 6" & vbTab & "NOME 7" & vbTab & "NOME 8" & vbTab & "NOME 9"
-    End If
-    
-    For linha = 2 To ultimaLinha
-        linhaStr = ""
-        linhaStr = Format(ws.Cells(linha, 1).Value, "dd/mm/yyyy") & vbTab
-        linhaStr = linhaStr & WorksheetFunction.Text(ws.Cells(linha, 1).Value, "ddd") & vbTab
-        linhaStr = linhaStr & ws.Cells(linha, 2).Value & vbTab
-        For col = 4 To 12
-            linhaStr = linhaStr & ws.Cells(linha, col).Value & vbTab
-        Next col
-        ListBox1.AddItem linhaStr
-    Next linha
-End Sub
 
 Private Sub CommandButton2_Click()
     ' Botão para chamar o UserForm AdicionaNome
     AdicionaNome.AnoSelecionado = AnoSelecionado
     AdicionaNome.Show
     'fecha formulario
-    Unload Me
+    'Unload Me
+   PreencherComboBox
 End Sub
 
 Private Sub CommandButton3_Click()
     ExcluirNome.AnoSelecionado = AnoSelecionado
     ExcluirNome.Show
+    'fecha formulario
+    'Unload Me
+    PreencherComboBox
 End Sub
+Private Sub PreencherListBox()
+    Dim ws As Worksheet
+    Dim diaSelecionado As Integer
+    Dim mesSelecionado As Integer
+    Dim dataBusca As Date
+    Dim linhaEncontrada As Boolean
+    Dim linha As Long
+    Dim ultimaColuna As Long
+    Dim i As Long
+
+    ' Limpar ListBox antes de preencher
+    ListBox1.Clear
+    
+    ' Configurar worksheet
+    Set ws = ThisWorkbook.Sheets("Planilha" & AnoSelecionado)
+    
+    ' Obter dia e mês selecionados
+    diaSelecionado = ComboBox2.Value
+    mesSelecionado = Month(DateValue("1 " & ComboBox3.Value & " 2000")) ' Converter nome do mês para número
+    dataBusca = DateSerial(AnoSelecionado, mesSelecionado, diaSelecionado)
+    
+    ' Encontrar a linha com a data selecionada
+    linhaEncontrada = False
+    For linha = 2 To ws.Cells(ws.Rows.Count, 1).End(xlUp).Row
+        If ws.Cells(linha, 1).Value = dataBusca Then
+            linhaEncontrada = True
+            Exit For
+        End If
+    Next linha
+    
+    If Not linhaEncontrada Then
+        ListBox1.AddItem "Data não encontrada."
+        Exit Sub
+    End If
+    
+    ' Adicionar cabeçalhos e valor da data e total de recursos
+    ListBox1.AddItem "DATA" & vbTab & vbTab & "TOTAL DE RECURSOS :"
+    ListBox1.AddItem Format(dataBusca, "dd/mm/yyyy") & vbTab & vbTab & ws.Cells(linha, 3).Value
+
+    ' Adicionar nomes e seus respectivos dados
+    ListBox1.AddItem "NOMES" & vbTab & "DADOS INSERIDOS"
+        
+    ultimaColuna = ws.Cells(1, Columns.Count).End(xlToLeft).Column
+    For i = 4 To ultimaColuna ' Assumindo que os nomes e dados começam da coluna 4
+        If ws.Cells(1, i).Value <> "" Then ' Verificar se há um nome na célula do cabeçalho
+            ' Cortar o nome para os primeiros 15 caracteres
+            Dim nomeCurto As String
+            nomeCurto = Left(ws.Cells(1, i).Value, 15)
+            ListBox1.AddItem nomeCurto & vbTab & vbTab & ws.Cells(linha, i).Value
+        End If
+    Next i
+End Sub
+
 
 Private Sub UserForm_Activate()
     ' Evento ativado quando o UserForm é ativado
     PreencherComboBox
     PreencherComboBoxDia
     PreencherComboBoxMes
-    PreencherListBox
+    
     ComboBox4.AddItem "DIURNO"
     ComboBox4.AddItem "FALTA"
     ComboBox4.AddItem "FÉRIAS"
