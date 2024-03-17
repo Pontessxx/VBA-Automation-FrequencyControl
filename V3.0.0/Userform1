@@ -229,7 +229,7 @@ Private Sub UserForm_Activate()
     PreencherComboBoxDia
     PreencherComboBoxMes
     
-    SetClassTextBox UserForm1, , 11133842
+    SetClassTextBox UserForm1, , 0
    
     
     
