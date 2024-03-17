@@ -1,6 +1,8 @@
 Private colunas As Object
 Private coluna As Integer ' Declarar a variável coluna como uma variável de nível do módulo
 Public AnoSelecionado As String
+Public NeedToUpdateListBox As Boolean
+
 
 Sub PreencherComboBox()
     ' Subroutine para preencher a ComboBox1 com os nomes existentes
@@ -227,11 +229,17 @@ Private Sub UserForm_Activate()
     PreencherComboBoxDia
     PreencherComboBoxMes
     
-    ComboBox4.AddItem "DIURNO"
-    ComboBox4.AddItem "FALTA"
-    ComboBox4.AddItem "FÉRIAS"
-    ComboBox4.AddItem "FOLGA PLANTAO SABADO"
-    ComboBox4.AddItem "PRESENÇA - OK"
+    SetClassTextBox UserForm1, , 11133842
+   
+    
+    
+    With Me.ComboBox4
+        .AddItem "DIURNO"
+        .AddItem "FALTA"
+        .AddItem "FÉRIAS"
+        .AddItem "FOLGA PLANTAO SABADO"
+        .AddItem "PRESENÇA - OK"
+    End With
     LabelAno.Caption = AnoSelecionado
 End Sub
 
